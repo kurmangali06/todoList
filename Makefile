@@ -6,24 +6,24 @@ export PROJECT_ROOT=${shell pwd}
 SHELL := /bin/bash
 
 .PHONY: env-up env-down env-port-forward env-port-close env-cleanup \
-        migrate-create migrate-up migrate-down migrate-action
+        migrate-create migrate-up migrate-down migrate-action todoapp-run
 
 env-up:
 	docker compose up -d todoapp-postgres
 
 env-down:
-	docker compose down  todoapp-postgres
+	@docker compose rm -sf todoapp-postgres
 
 env-port-forward: ## env: Открыть порты сервисов окружения
 	@docker compose up -d port-forwarder
 
 env-port-close: ## env: Закрыть порты сервисов окружения
-	@docker compose down port-forwarder
+	@docker compose rm -sf port-forwarder
 
 env-cleanup:
 	@read -p "Очистить все volume файлы окружения? Опасность утери данных. [y/N]: " ans; \
 	if [ "$$ans" = "y" ]; then \
-	  docker compose down todoapp-postgres && \
+	  docker compose rm -sf todoapp-postgres && \
 	  rm -rf out/pgdata && \
 	  echo "Файлы окружения очищены"; \
 	else \
@@ -60,5 +60,6 @@ migrate-action:
 
 todoapp-run:
 	@export LOGGER_FOLDER=${PROJECT_ROOT}/out/logs && \
+	export POSTGRES_HOST=localhost && \
 	go mod tidy && \
 	go run cmd/todoapp/main.go

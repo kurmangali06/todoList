@@ -7,8 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 	core_logger "todolist/internal/core/logger"
+	core_postgres_pool "todolist/internal/core/repository/postgres/pool"
 	core_http_middleware "todolist/internal/core/transport/http/middleware"
 	corre_http_server "todolist/internal/core/transport/http/server"
+	users_postgres_repository "todolist/internal/features/users/repository/postgres"
+	users_service "todolist/internal/features/users/service"
 	users_transport_http "todolist/internal/features/users/transport/http"
 
 	"go.uber.org/zap"
@@ -29,10 +32,22 @@ func main() {
 		os.Exit(1)
 	}
 	defer logger.Close()
+	logger.Debug("init postgres connection pool")
+	pool, err := core_postgres_pool.NewConnectionPool(
+		ctx,
+		core_postgres_pool.NewConfigMust(),
+	)
+	if err != nil {
+		logger.Fatal("Postgres connection pool init error", zap.Error(err))
+	}
 
-	logger.Debug("Starting TodoApp")
+	defer pool.Close()
+	logger.Debug("init postgres connection pool done", zap.String("features", "users"))
+	userRepository := users_postgres_repository.NewUsersRepository(pool)
+	userService := users_service.NewUsersService(userRepository)
+	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(userService)
+	logger.Debug("init users HTTP server")
 
-	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(nil)
 	usersRoutes := usersTransportHTTP.Routes()
 
 	apiVersionRouter := corre_http_server.NewAPIVersionRouter(corre_http_server.ApiVersionV1)
