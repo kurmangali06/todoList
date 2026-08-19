@@ -31,6 +31,11 @@ type UsersService interface {
 		ctx context.Context,
 		ID uuid.UUID,
 	) error
+	PatchUser(
+		ctx context.Context,
+		ID uuid.UUID,
+		user domain.UserPatch,
+	) (domain.User, error)
 }
 
 func NewUsersHTTPHandler(usersService UsersService) *UserHTTPHandler {
@@ -58,6 +63,11 @@ func (h *UserHTTPHandler) Routes() []corre_http_server.Route {
 			Method:  http.MethodDelete,
 			Path:    "/users/{id}",
 			Handler: h.DeleteUser,
+		},
+		{
+			Method:  http.MethodPatch,
+			Path:    "/users/{id}",
+			Handler: h.PatchUser,
 		},
 	}
 }
