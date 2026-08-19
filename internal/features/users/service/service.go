@@ -3,6 +3,8 @@ package users_service
 import (
 	"context"
 	"todolist/internal/core/domain"
+
+	"github.com/google/uuid"
 )
 
 type UsersService struct {
@@ -19,6 +21,14 @@ type UsersRepository interface {
 		limit *int,
 		offset *int,
 	) ([]domain.User, error)
+	GetUser(
+		ctx context.Context,
+		ID uuid.UUID,
+	) (domain.User, error)
+	DeleteUser(
+		ctx context.Context,
+		ID uuid.UUID,
+	) error
 }
 
 func NewUsersService(usersRepository UsersRepository) *UsersService {

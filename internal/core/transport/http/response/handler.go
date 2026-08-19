@@ -26,6 +26,10 @@ func NewHTTPResponseHandler(
 	}
 }
 
+func (h *HTTPResponseHandler) NoContentResponse() {
+	h.rw.WriteHeader(http.StatusNoContent)
+}
+
 func (h *HTTPResponseHandler) JsonResponse(responseBody any, statusCode int) {
 	h.rw.WriteHeader(statusCode)
 	if err := json.NewEncoder(h.rw).Encode(responseBody); err != nil {

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"todolist/internal/core/domain"
 	corre_http_server "todolist/internal/core/transport/http/server"
+
+	"github.com/google/uuid"
 )
 
 type UserHTTPHandler struct {
@@ -21,6 +23,14 @@ type UsersService interface {
 		limit *int,
 		offset *int,
 	) ([]domain.User, error)
+	GetUser(
+		ctx context.Context,
+		ID uuid.UUID,
+	) (domain.User, error)
+	DeleteUser(
+		ctx context.Context,
+		ID uuid.UUID,
+	) error
 }
 
 func NewUsersHTTPHandler(usersService UsersService) *UserHTTPHandler {
@@ -38,6 +48,16 @@ func (h *UserHTTPHandler) Routes() []corre_http_server.Route {
 			Method:  http.MethodGet,
 			Path:    "/users",
 			Handler: h.GetUsers,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/users/{id}",
+			Handler: h.GetUser,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/users/{id}",
+			Handler: h.DeleteUser,
 		},
 	}
 }
