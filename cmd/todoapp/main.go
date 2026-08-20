@@ -10,6 +10,9 @@ import (
 	"todolist/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "todolist/internal/core/transport/http/middleware"
 	corre_http_server "todolist/internal/core/transport/http/server"
+	tasks_postgres_repository "todolist/internal/features/tasks/repository/postgres"
+	tasks_service "todolist/internal/features/tasks/service"
+	tasks_transport_http "todolist/internal/features/tasks/transport/http"
 	users_postgres_repository "todolist/internal/features/users/repository/postgres"
 	users_service "todolist/internal/features/users/service"
 	users_transport_http "todolist/internal/features/users/transport/http"
@@ -32,7 +35,7 @@ func main() {
 	}
 	defer logger.Close()
 	logger.Debug("init postgres connection pool")
-	pool, err := core_pgx_pool.NewPool(
+	postgresPool, err := core_pgx_pool.NewPool(
 		ctx,
 		core_pgx_pool.NewConfigMust(),
 	)
@@ -40,17 +43,26 @@ func main() {
 		logger.Fatal("Postgres connection pool init error", zap.Error(err))
 	}
 
-	defer pool.Close()
-	logger.Debug("init postgres connection pool done", zap.String("features", "users"))
-	userRepository := users_postgres_repository.NewUsersRepository(pool)
+	defer postgresPool.Close()
+
+	logger.Debug("initializing feature", zap.String("feature", "users"))
+	userRepository := users_postgres_repository.NewUsersRepository(postgresPool)
 	userService := users_service.NewUsersService(userRepository)
 	usersTransportHTTP := users_transport_http.NewUsersHTTPHandler(userService)
+
+	logger.Debug("initializing feature", zap.String("feature", "tasks"))
+	tasksRepository := tasks_postgres_repository.NewTasksRepository(postgresPool)
+	tasksService := tasks_service.NewTasksService(tasksRepository)
+	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(tasksService)
+
 	logger.Debug("init users HTTP server")
 
 	usersRoutes := usersTransportHTTP.Routes()
+	tasksRoutes := tasksTransportHTTP.Routes()
 
 	apiVersionRouter := corre_http_server.NewAPIVersionRouter(corre_http_server.ApiVersionV1)
 	apiVersionRouter.RegisterRoutes(usersRoutes...)
+	apiVersionRouter.RegisterRoutes(tasksRoutes...)
 
 	httpServer := corre_http_server.NewHTTPServer(
 		corre_http_server.NewConfigMust(),
