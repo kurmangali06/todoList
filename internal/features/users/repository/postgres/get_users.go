@@ -19,7 +19,7 @@ func (r *UsersRepository) GetUsers(
 		FROM todoapp.users
 		ORDER BY id ASC
 		LIMIT $1
-		OFFSET $2
+		OFFSET $2;
 	`
 	rows, err := r.pool.Query(ctx, query, limit, offset)
 	if err != nil {

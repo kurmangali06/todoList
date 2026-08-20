@@ -9,7 +9,6 @@ import (
 	core_http_request "todolist/internal/core/transport/http/request"
 	core_http_response "todolist/internal/core/transport/http/response"
 	core_http_types "todolist/internal/core/transport/http/types"
-	core_http_utils "todolist/internal/core/transport/http/utils"
 )
 
 type PatchUserRequest struct {
@@ -51,7 +50,7 @@ func (h *UserHTTPHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseHandler(log, rw)
-	userID, err := core_http_utils.GetUUIDPathValue(r, "id")
+	userID, err := core_http_request.GetUUIDPathValue(r, "id")
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,
@@ -79,8 +78,8 @@ func (h *UserHTTPHandler) PatchUser(rw http.ResponseWriter, r *http.Request) {
 }
 
 func userPatchFromRequest(req PatchUserRequest) domain.UserPatch {
-	return domain.UserPatch{
-		FullName:    req.FullName.ToDomain(),
-		PhoneNumber: req.PhoneNumber.ToDomain(),
-	}
+	return domain.NewUserPatch(
+		req.FullName.ToDomain(),
+		req.PhoneNumber.ToDomain(),
+	)
 }

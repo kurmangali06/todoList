@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	core_logger "todolist/internal/core/logger"
-	core_postgres_pool "todolist/internal/core/repository/postgres/pool"
+	"todolist/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "todolist/internal/core/transport/http/middleware"
 	corre_http_server "todolist/internal/core/transport/http/server"
 	users_postgres_repository "todolist/internal/features/users/repository/postgres"
@@ -24,7 +24,6 @@ func main() {
 	)
 	defer cancel()
 
-	fmt.Println("Hello, World!")
 	logger, err := core_logger.NewLogger(core_logger.NewConfigMust())
 
 	if err != nil {
@@ -33,9 +32,9 @@ func main() {
 	}
 	defer logger.Close()
 	logger.Debug("init postgres connection pool")
-	pool, err := core_postgres_pool.NewConnectionPool(
+	pool, err := core_pgx_pool.NewPool(
 		ctx,
-		core_postgres_pool.NewConfigMust(),
+		core_pgx_pool.NewConfigMust(),
 	)
 	if err != nil {
 		logger.Fatal("Postgres connection pool init error", zap.Error(err))
@@ -58,8 +57,8 @@ func main() {
 		logger,
 		core_http_middleware.RequestId(),
 		core_http_middleware.Logger(logger),
-		core_http_middleware.Panic(),
 		core_http_middleware.Trace(),
+		core_http_middleware.Panic(),
 	)
 
 	httpServer.RegisterAPIRoutes(apiVersionRouter)
