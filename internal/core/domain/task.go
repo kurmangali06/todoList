@@ -140,8 +140,8 @@ func (t *TaskPatch) Validate() error {
 	if t.Title.Set && t.Title.Value == nil {
 		return fmt.Errorf("`Title` is required: %w", core_error.ErrInvalidArgument)
 	}
-	if t.Description.Set && t.Description.Value == nil {
-		return fmt.Errorf("`Description` is required: %w", core_error.ErrInvalidArgument)
+	if t.Completed.Set && t.Completed.Value == nil {
+		return fmt.Errorf("`Completed` is required: %w", core_error.ErrInvalidArgument)
 	}
 	return nil
 }

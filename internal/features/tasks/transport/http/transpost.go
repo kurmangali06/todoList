@@ -29,7 +29,7 @@ type TasksService interface {
 	) ([]domain.Task, error)
 	GetTask(
 		ctx context.Context,
-		userID uuid.UUID,
+		ID uuid.UUID,
 	) (domain.Task, error)
 	DeleteTask(
 		ctx context.Context,

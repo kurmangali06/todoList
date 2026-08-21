@@ -24,7 +24,7 @@ type TasksRepository interface {
 	) ([]domain.Task, error)
 	GetTask(
 		ctx context.Context,
-		userID uuid.UUID,
+		ID uuid.UUID,
 	) (domain.Task, error)
 	DeleteTask(
 		ctx context.Context,
@@ -32,8 +32,7 @@ type TasksRepository interface {
 	) error
 	PatchTask(
 		ctx context.Context,
-		ID uuid.UUID,
-		patch domain.Task,
+		task domain.Task,
 	) (domain.Task, error)
 }
 

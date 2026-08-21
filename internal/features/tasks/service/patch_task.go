@@ -22,7 +22,7 @@ func (s *TasksService) PatchTask(
 		return domain.Task{}, fmt.Errorf("apply patch to task: %w", err)
 	}
 
-	taskDomain, err := s.tasksRepository.PatchTask(ctx, ID, task)
+	taskDomain, err := s.tasksRepository.PatchTask(ctx, task)
 	if err != nil {
 		return domain.Task{}, fmt.Errorf("update task in repository: %w", err)
 	}

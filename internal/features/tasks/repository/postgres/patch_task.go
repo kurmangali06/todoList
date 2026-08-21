@@ -7,14 +7,11 @@ import (
 	"todolist/internal/core/domain"
 	core_error "todolist/internal/core/errors"
 	core_postgres_pool "todolist/internal/core/repository/postgres/pool"
-
-	"github.com/google/uuid"
 )
 
 func (r *TasksRepository) PatchTask(
 	ctx context.Context,
-	ID uuid.UUID,
-	patch domain.Task,
+	task domain.Task,
 ) (domain.Task, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
@@ -43,12 +40,12 @@ func (r *TasksRepository) PatchTask(
 	row := r.pool.QueryRow(
 		ctx,
 		query,
-		patch.Title,
-		patch.Description,
-		patch.Completed,
-		patch.CompletedAt,
-		ID,
-		patch.Version,
+		task.Title,
+		task.Description,
+		task.Completed,
+		task.CompletedAt,
+		task.ID,
+		task.Version,
 	)
 	var taskModel TaskModel
 	err := row.Scan(
@@ -65,7 +62,7 @@ func (r *TasksRepository) PatchTask(
 		if errors.Is(err, core_postgres_pool.ErrNoRows) {
 			return domain.Task{}, fmt.Errorf(
 				"task with id='%s' concurrently accessed: %w",
-				taskModel.ID,
+				task.ID,
 				core_error.ErrConflict,
 			)
 		}
