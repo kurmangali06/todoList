@@ -30,6 +30,16 @@ env-cleanup:
 	  echo "Очистка окружения отменена"; \
 	fi
 
+
+logs-cleanup: ## env: Очистить файлы логов из out/logs
+	@read -p "Очистить все log файлы? Опасность утери логов. [y/N]: " ans; \
+	if [ "$$ans" = "y" ]; then \
+		rm -rf ${PROJECT_ROOT}/out/logs && \
+		echo "Файлы логов очищены"; \
+	else \
+		echo "Очистка логов отменена"; \
+	fi
+
 migrate-create:
 	@if [ -z "$(seq)" ]; then \
 		echo "Отсутствует необходимый параметр seq. Пример: make migrate-create seq=init"; \
