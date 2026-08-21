@@ -12,6 +12,9 @@ import (
 	"todolist/internal/core/repository/postgres/pool/pgx"
 	core_http_middleware "todolist/internal/core/transport/http/middleware"
 	corre_http_server "todolist/internal/core/transport/http/server"
+	statistics_postgres_repository "todolist/internal/features/statistics/repository/postgres"
+	statistics_service "todolist/internal/features/statistics/service"
+	statistics_transport_http "todolist/internal/features/statistics/transport"
 	tasks_postgres_repository "todolist/internal/features/tasks/repository/postgres"
 	tasks_service "todolist/internal/features/tasks/service"
 	tasks_transport_http "todolist/internal/features/tasks/transport/http"
@@ -62,14 +65,21 @@ func main() {
 	tasksService := tasks_service.NewTasksService(tasksRepository)
 	tasksTransportHTTP := tasks_transport_http.NewTasksHTTPHandler(tasksService)
 
+	logger.Debug("initializing feature", zap.String("feature", "statistics"))
+	statisticsRepository := statistics_postgres_repository.NewStatisticsRepository(postgresPool)
+	statisticsService := statistics_service.NewStatisticsService(statisticsRepository)
+	statisticsTransportHTTP := statistics_transport_http.NewStatisticsHTTPHandler(statisticsService)
+
 	logger.Debug("init users HTTP server")
 
 	usersRoutes := usersTransportHTTP.Routes()
 	tasksRoutes := tasksTransportHTTP.Routes()
+	statisticsRoutes := statisticsTransportHTTP.Routes()
 
 	apiVersionRouter := corre_http_server.NewAPIVersionRouter(corre_http_server.ApiVersionV1)
 	apiVersionRouter.RegisterRoutes(usersRoutes...)
 	apiVersionRouter.RegisterRoutes(tasksRoutes...)
+	apiVersionRouter.RegisterRoutes(statisticsRoutes...)
 
 	httpServer := corre_http_server.NewHTTPServer(
 		corre_http_server.NewConfigMust(),
