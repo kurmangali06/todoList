@@ -117,3 +117,65 @@ func (t *Task) Validate() error {
 
 	return nil
 }
+
+type TaskPatch struct {
+	Title       Nullable[string]
+	Description Nullable[string]
+	Completed   Nullable[bool]
+}
+
+func NewTaskPatch(
+	title Nullable[string],
+	description Nullable[string],
+	completed Nullable[bool],
+) TaskPatch {
+	return TaskPatch{
+		Title:       title,
+		Description: description,
+		Completed:   completed,
+	}
+}
+
+func (t *TaskPatch) Validate() error {
+	if t.Title.Set && t.Title.Value == nil {
+		return fmt.Errorf("`Title` is required: %w", core_error.ErrInvalidArgument)
+	}
+	if t.Description.Set && t.Description.Value == nil {
+		return fmt.Errorf("`Description` is required: %w", core_error.ErrInvalidArgument)
+	}
+	return nil
+}
+
+func (t *Task) ApplyPatch(patch TaskPatch) error {
+	if err := patch.Validate(); err != nil {
+		return fmt.Errorf("validate task patch: %w", err)
+	}
+	tmp := *t
+
+	if patch.Title.Set {
+		tmp.Title = *patch.Title.Value
+	}
+	if patch.Description.Set {
+		tmp.Description = patch.Description.Value
+	}
+
+	if patch.Completed.Set {
+		completed := *patch.Completed.Value
+
+		if completed {
+			completedAt := time.Now()
+			tmp.CompletedAt = &completedAt
+		} else {
+			tmp.CompletedAt = nil
+		}
+
+		tmp.Completed = completed
+	}
+
+	if err := tmp.Validate(); err != nil {
+		return fmt.Errorf("validate patched task: %w", err)
+	}
+
+	*t = tmp
+	return nil
+}

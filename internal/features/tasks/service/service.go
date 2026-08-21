@@ -26,6 +26,15 @@ type TasksRepository interface {
 		ctx context.Context,
 		userID uuid.UUID,
 	) (domain.Task, error)
+	DeleteTask(
+		ctx context.Context,
+		ID uuid.UUID,
+	) error
+	PatchTask(
+		ctx context.Context,
+		ID uuid.UUID,
+		patch domain.Task,
+	) (domain.Task, error)
 }
 
 func NewTasksService(

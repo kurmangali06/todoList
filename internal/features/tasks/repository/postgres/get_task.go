@@ -16,7 +16,7 @@ func (r *TasksRepository) GetTask(ctx context.Context, id uuid.UUID) (domain.Tas
 	defer cancel()
 
 	query := `
-			SELECT id, title, description, completed, created_at, completed_at, author_user_id
+			SELECT id, version, title, description, completed, created_at, completed_at, author_user_id
 			FROM todoapp.tasks	
 			WHERE id = $1;
 		`
@@ -25,6 +25,7 @@ func (r *TasksRepository) GetTask(ctx context.Context, id uuid.UUID) (domain.Tas
 	var taskModel TaskModel
 	err := row.Scan(
 		&taskModel.ID,
+		&taskModel.Version,
 		&taskModel.Title,
 		&taskModel.Description,
 		&taskModel.Completed,
